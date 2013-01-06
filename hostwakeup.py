@@ -69,7 +69,7 @@ def write_hosts(file, hosts):
         else:
             with open(file, "w") as f:
                 for host in hosts:
-                    f.write("host=%s,mac=%s\n" % (host, hosts[host]))
+                    f.write("host={0},mac={1}\n".format(host, hosts[host]))
     except:
         pass
 
@@ -155,6 +155,7 @@ class HostWakeupService(dbus.service.Object):
     def __init__(self, bus, avahi_service, interface):
         bus_name = dbus.service.BusName(dbus_interface, bus = bus)
         dbus.service.Object.__init__(self, bus_name, "/Hosts")
+        self.host_lock = threading.Lock()
         self.Hosts = {}
         self.avahi_service = avahi_service
         self.interface = interface
@@ -163,7 +164,7 @@ class HostWakeupService(dbus.service.Object):
         self.avahi_browser = avahi_browser
 
     def CallTcpServer(self, address, port, protocol, message):
-        print "calling %s:%d: %s" % (address, port, message)
+        print("calling {0}:{1}: {2}".format(address, port, message))
         sock = socket.socket(protocol, socket.SOCK_STREAM)
         sock.connect((address, port))
         try:
@@ -179,20 +180,24 @@ class HostWakeupService(dbus.service.Object):
             net_services = self.avahi_browser.get_net_services()
             for name in net_services:
                 (address, port, protocol) = net_services[name]
-                self.CallTcpServer(address, port, protocol, "wakeup %s" % (host))
+                self.CallTcpServer(address, port, protocol, "wakeup {0}".format(host))
         return False
 
     def InternWakeup(self, host):
         if not host:
             return False
         lowerHost = host.lower()
+        self.host_lock.acquire()
         if lowerHost not in self.Hosts:
+            self.host_lock.release()
             return False
         broadcast = get_broadcast_addr(self.interface)
         if not broadcast:
+            self.host_lock.release()
             return False
-        print "wake up " + host + " with MAC " + self.Hosts[lowerHost] + " on broadcast address " + broadcast
+        print("wake up " + host + " with MAC " + self.Hosts[lowerHost] + " on broadcast address " + broadcast)
         wake_on_lan(self.Hosts[lowerHost], broadcast)
+        self.host_lock.release()
         return True
 
     @dbus.service.method(dbus_interface, in_signature = "ss", out_signature = "b")
@@ -201,10 +206,13 @@ class HostWakeupService(dbus.service.Object):
             return False
         lowerHost = host.lower().encode("ascii", "ignore")
         lowerMac = mac.lower().encode("ascii", "ignore")
+        self.host_lock.acquire()
         if (lowerHost in self.Hosts) and (self.Hosts[lowerHost] == lowerMac):
+            self.host_lock.release()
             return False
-        print "add host %s with mac %s" % (lowerHost, lowerMac)
+        print("add host {0} with mac {1}".format(lowerHost, lowerMac))
         self.Hosts[lowerHost] = lowerMac
+        self.host_lock.release()
         return True
 
     @dbus.service.method(dbus_interface, in_signature = "s", out_signature = "b")
@@ -212,19 +220,33 @@ class HostWakeupService(dbus.service.Object):
         if not host:
             return False
         lowerHost = host.lower().encode("ascii", "ignore")
+        self.host_lock.acquire()
         if lowerHost not in self.Hosts:
+            self.host_lock.release()
             return False
-        print "remove host %s" % (lowerHost)
+        print("remove host {0}".format(lowerHost))
         del self.Hosts[lowerHost]
+        self.host_lock.release()
         return True
+
+    @dbus.service.method(dbus_interface, in_signature = "", out_signature = "as")
+    def List(self):
+        hosts = []
+        self.host_lock.acquire()
+        for host in self.Hosts:
+            hosts.append(host)
+        self.host_lock.release()
+        return hosts
 
     @dbus.service.method(dbus_interface, in_signature = "", out_signature = "b")
     def Publish(self):
         txts = []
+        self.host_lock.acquire()
         for host in self.Hosts:
-            txt = "host=%s,mac=%s" % (host, self.Hosts[host])
-            print "publish: " + txt
+            txt = "host={0},mac={1}".format(host, self.Hosts[host])
+            print("publish: " + txt)
             txts.append(txt)
+        self.host_lock.release()
         self.avahi_service.Publish(txts)
         return True
 
@@ -233,7 +255,7 @@ class HostWakeupService(dbus.service.Object):
 class TcpServerRequestHandler(SocketServer.StreamRequestHandler):
     def handle(self):
         data = self.rfile.readline().strip().lower()
-        print "recv: " + data
+        print("recv: " + data)
         if data.startswith("wakeup "):
             host = data[7:].strip()
             if hostWakeupService.InternWakeup(host):
@@ -263,7 +285,7 @@ def StopTcpServer(server):
 
 def sig_term_handler(signum, frame):
     if signum == signal.SIGTERM:
-        print "TERM: quitting"
+        print("TERM: quitting")
         if not loop:
             sys.exit(0)
         else:
@@ -278,11 +300,11 @@ def parse_args(argv):
         if opt in ("-i", "--interface"):
             global mac_interface
             mac_interface = arg
-            print "using interface " + mac_interface
+            print("using interface " + mac_interface)
         elif opt in ("-f", "--file"):
             global host_file
             host_file = arg
-            print "using host file " + host_file
+            print("using host file " + host_file)
 
 
 if __name__ == "__main__":
@@ -291,7 +313,7 @@ if __name__ == "__main__":
     parse_args(sys.argv[1:])
 
     if not mac_interface in netifaces.interfaces():
-        print "interface " + mac_interface + " not found"
+        print("interface " + mac_interface + " not found")
         sys.exit(1)
 
     bus = dbus.SystemBus(mainloop = DBusGMainLoop())
@@ -299,11 +321,11 @@ if __name__ == "__main__":
 
     hostname = socket.gethostname().lower()
     mac = get_mac(mac_interface)
-    print "host " + hostname + " has MAC " + mac + " on interface " + mac_interface
+    print("host " + hostname + " has MAC " + mac + " on interface " + mac_interface)
 
     (tcpServer, tcpThread, tcpPort) = StartTcpServer("")
     if tcpPort != 0:
-        print "listening on port %d" % (tcpPort)
+        print("listening on port {0}".format(tcpPort))
 
     avahi_server = dbus.Interface(bus.get_object(avahi.DBUS_NAME, avahi.DBUS_PATH_SERVER), avahi.DBUS_INTERFACE_SERVER)
     avahiService = AvahiService(avahi_server, "host-wakeup on " + hostname, service_type, tcpPort)
@@ -311,7 +333,7 @@ if __name__ == "__main__":
     hostWakeupService = HostWakeupService(bus, avahiService, mac_interface)
     hostWakeupService.Add(hostname, mac)
 
-    print "reading hosts from " + host_file
+    print("reading hosts from " + host_file)
     hosts = read_hosts(host_file)
     for h in hosts:
         hostWakeupService.Add(h, hosts[h])
