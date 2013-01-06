@@ -1,0 +1,75 @@
+Host Wakeup Service
+-------------------
+This service will collect the MACs and hostnames of all stations
+at the LAN on which this service is running. If a program needs
+to wakeup such a station it can delegate this to this service so
+it doesn't have to remember its MAC.
+
+How it works
+------------
+hostwakeup retrieves the MAC from the network interface (eth0, can
+be controlled with the parameter "-i"), starts a tcp-server on some
+random port and publish this port and the hostname/mac combination
+via avahi as "_host-wakeup._tcp" with a TXT record
+"host=name,mac=xx:xx:xx:xx:xx:xx".
+
+Then it starts an avahi-browser for its type and republish every
+found host/mac as an additional TXT record. This makes sure every
+hostwakeup service will know every host/mac. Even if on a host
+shutdown its record will survive on the other hosts.
+
+Also on shutdown the known hosts are stored on disk and reloaded
+on startup (default ist /var/cache/hostwakeup/hosts.conf, can be
+controlled with the parameter "-f").
+
+This list will only grow, never reduced automatically. If it contains
+old hosts they have to be removed manually from every service.
+
+If you need to wakeup some host, you can instruct hostwakeup to do it.
+It will lookup the MAC and send the WOL magic packet to the broadcast
+address of its interface. If it doesn't know the host it will delegate
+the wakeup via TCP to the other running hostwakeup services. But this
+is only a fallback since every host should always know all hosts. But
+who knows... :)
+
+Waking up hosts
+---------------
+There are two ways to call hostwakeup: DBus and TCP
+Since the TCP port is dynamically assigned it may be a bit complicated
+to detect it. You can look for it with avahi but if you use avahi you
+can also use DBus.
+
+TCP from a shell (not recommended):
+look for port:
+$ avahi-browse -r -t _host-wakeup._tcp
+call hostwakeup
+$ echo "wakeup hostname" | nc localhost port
+
+DBus (recommended):
+$ dbus-send --system --type=method_call --dest=de.yavdr.hostwakeup \
+  --print-reply /Hosts de.yavdr.hostwakeup.Wakeup string:'hostname'
+
+Python:
+import dbus
+def WakeupHost(hostname):
+    bus = dbus.SystemBus()
+    Hosts = bus.get_object('de.yavdr.hostwakeup', '/Hosts')
+    return Hosts.Wakeup(hostname, dbus_interface = 'de.yavdr.hostwakeup')
+
+Configuration
+-------------
+If you want to run this service as non-root you have to allow the user
+to connect to the DBus-System-Bus. Have a look at de.yavdr.hostwakeup.conf
+and copy this file to /etc/dbus-1/system.d. In this example it is allowed
+for the user "vdr". All examples refer to yaVDR (http://www.yavdr.org/)
+since that project is the originator of this kind of service.
+Also you can find an Upstart-Job configuration at the file hostwakeup.conf.
+Since it needs DBus, Avahi and network you need the right startup
+dependencies on your system.
+
+TODO
+----
+- don't depend on running dbus-daemon or avahi-daemon
+  just reconnect if they run again
+- do error handling on avahi-service and -browser
+- maybe multi-interface support?
