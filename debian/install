@@ -1,0 +1,4 @@
+hostwakeup.py usr/bin/
+de.yavdr.hostwakeup.conf etc/dbus-1/system.d/
+hostwakeup.conf var/lib/vdr/.init/
+
