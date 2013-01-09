@@ -1,4 +1,5 @@
 #!/bin/sh
 
 chown vdr.vdr /var/lib/vdr/.init/hostwakeup.conf
+chown vdr.vdr /var/cache/hostwakeup
 
