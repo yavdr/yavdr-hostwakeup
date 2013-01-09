@@ -4,6 +4,9 @@ ARCHIVE = $(NAME)-$(VERSION)
 PACKAGE = yavdr-$(ARCHIVE)
 TMPDIR = /tmp
 
+hostwakeup-example: hostwakeup-example.c
+	gcc -o hostwakeup-example hostwakeup-example.c `pkg-config --cflags dbus-1` `pkg-config --libs dbus-1`
+
 dist:
 	@-rm -rf $(TMPDIR)/$(ARCHIVE)
 	@mkdir $(TMPDIR)/$(ARCHIVE)
@@ -13,4 +16,4 @@ dist:
 	@echo Distribution package created as $(PACKAGE).tgz
 
 clean:
-
+	@rm -f hostwakeup-example
