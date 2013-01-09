@@ -1,4 +1,4 @@
-VERSION = 1
+VERSION = 2
 NAME = hostwakeup
 ARCHIVE = $(NAME)-$(VERSION)
 PACKAGE = yavdr-$(ARCHIVE)
