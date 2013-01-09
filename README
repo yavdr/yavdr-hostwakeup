@@ -64,8 +64,7 @@ Configuration
 If you want to run this service as non-root you have to allow the user
 to connect to the DBus-System-Bus. Have a look at de.yavdr.hostwakeup.conf
 and copy this file to /etc/dbus-1/system.d. In this example it is allowed
-for the user "vdr". All examples refer to yaVDR (http://www.yavdr.org/)
-since that project is the originator for this kind of service.
+for the user "root".
 You can also find an Upstart-Job configuration at the file hostwakeup.conf.
 Since it needs DBus, Avahi and network you need the right startup
 dependencies on your system.
