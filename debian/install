@@ -1,4 +1,4 @@
 hostwakeup.py usr/share/yavdr-hostwakeup/
 de.yavdr.hostwakeup.conf etc/dbus-1/system.d/
-hostwakeup.conf var/lib/vdr/.init/
+hostwakeup.conf etc/init/
 
