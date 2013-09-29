@@ -1,3 +1,9 @@
+yavdr-hostwakeup (3-1yavdr0~precise) precise; urgency=medium
+
+  * add python-netifaces as dependency
+
+ -- Lars Hanisch <dvb@flensrocker.de>  Sun, 29 Sep 2013 21:21:54 +0200
+
 yavdr-hostwakeup (3-0yavdr0~precise) precise; urgency=medium
 
   * add example in C
