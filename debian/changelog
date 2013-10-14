@@ -1,3 +1,9 @@
+yavdr-hostwakeup (3-2yavdr0~precise) precise; urgency=medium
+
+  * add python-gobject-dev as dependency
+
+ -- Lars Hanisch <dvb@flensrocker.de>  Tue, 15 Oct 2013 00:26:25 +0200
+
 yavdr-hostwakeup (3-1yavdr0~precise) precise; urgency=medium
 
   * add python-netifaces as dependency
