@@ -9,6 +9,7 @@ Homepage: https://github.com/flensrocker/hostwakeup
 Package: yavdr-hostwakeup
 Architecture: any
 Depends: python-avahi, python-netifaces, python-gobject-dev
+Recommends: avahi-daemon
 Description: A network services for waking up hosts
  This service will collect hostnames and their MACs from other
  stations on the LAN running the service. Any program can wakeup

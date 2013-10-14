@@ -1,3 +1,9 @@
+yavdr-hostwakeup (3-3yavdr0~precise) precise; urgency=medium
+
+  * add avahi-daemon as recommended
+
+ -- Lars Hanisch <dvb@flensrocker.de>  Tue, 15 Oct 2013 00:53:05 +0200
+
 yavdr-hostwakeup (3-2yavdr0~precise) precise; urgency=medium
 
   * add python-gobject-dev as dependency
