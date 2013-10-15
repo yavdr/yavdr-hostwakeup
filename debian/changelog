@@ -1,3 +1,9 @@
+yavdr-hostwakeup (4-0yavdr0~precise) precise; urgency=medium
+
+  * new upstream version
+
+ -- Lars Hanisch <dvb@flensrocker.de>  Tue, 15 Oct 2013 21:06:11 +0200
+
 yavdr-hostwakeup (3-3yavdr0~precise) precise; urgency=medium
 
   * add avahi-daemon as recommended
