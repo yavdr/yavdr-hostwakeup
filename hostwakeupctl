@@ -1,0 +1,28 @@
+#!/usr/bin/python
+
+import dbus
+import sys
+
+def List():
+  bus = dbus.SystemBus()
+  Hosts = bus.get_object('de.yavdr.hostwakeup', '/Hosts')
+  hosts = Hosts.List(dbus_interface = 'de.yavdr.hostwakeup')
+  for host in hosts:
+    print host
+
+def WakeupHost(hostname):
+  bus = dbus.SystemBus()
+  Hosts = bus.get_object('de.yavdr.hostwakeup', '/Hosts')
+  return Hosts.Wakeup(hostname, dbus_interface = 'de.yavdr.hostwakeup')
+
+if __name__ == "__main__":
+  if len(sys.argv) <= 1:
+     print "usage: hostwakeupctl list"
+     print "       hostwakeupctl wakeup hostname"
+  elif sys.argv[1] == "list":
+    List()
+  elif sys.argv[1] == "wakeup":
+    if len(sys.argv) == 3:
+      WakeupHost(sys.argv[2])
+    else:
+      print "wakeup: hostname missing"
