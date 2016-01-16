@@ -23,8 +23,9 @@ host_file = "/var/cache/hostwakeup/hosts.conf"
 
 
 class Hostwakeup:
-    def __init__(self, host_file):
-        self.host_file = host_file
+    def __init__(self, options):
+        self.host_file = options.host_file
+        self.default_interface = options.interface
         self.hostname = socket.gethostname().lower()
         self.interfaces = self.get_interfaces()
         self.hosts = self.read_hosts()
@@ -35,11 +36,13 @@ class Hostwakeup:
     def __exit__(self, type, value, traceback):
         self.write_hosts()
 
-    @classmethod
-    def get_interfaces(cls):
+    def get_interfaces(self):
         interfaces = []
         Interface = namedtuple('Interface', ['name', 'broadcast_addr', 'mac'])
-        for interf in netifaces.interfaces():
+        if_list = ([self.default_interface] if self.default_interface
+                   else netifaces.interfaces())
+
+        for interf in if_list:
             if self.get_broadcast(interf):
                 interface = Interface(name=interf,
                                       broadcast_addr=self.get_broadcast(interf),
@@ -83,12 +86,12 @@ class Hostwakeup:
             print(e)
 
     @classmethod
-    def get_mac(cls, interface):
+    def get_mac(self, interface):
         if_dict = netifaces.ifaddresses(interface)[netifaces.AF_LINK][0]
         return if_dict["addr"].lower() if "addr" in if_dict else None
 
     @classmethod
-    def get_broadcast(cls, interface):
+    def get_broadcast(self, interface):
         if_dict = netifaces.ifaddresses(interface)[netifaces.AF_INET][0]
         if "broadcast" in if_dict:
             return if_dict["broadcast"]
@@ -361,8 +364,11 @@ if __name__ == "__main__":
     parser = optparse.OptionParser()
     parser.add_option("-f", "--host_file",
                       dest="host_file", help="store known hosts in this file")
+    parser.add_option("-i", "--interface",
+                      dest="interface", default=None,
+                      help="use data for this interface, e.g. eth0")
     options, args = parser.parse_args()
-    with Hostwakeup(options.host_file) as hostwakeup:
+    with Hostwakeup(options) as hostwakeup:
         avahi_service_name = "host-wakeup on {}".format(hostwakeup.hostname)
 
         with TcpServer("") as tcpserver:
