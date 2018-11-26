@@ -1,3 +1,9 @@
+yavdr-hostwakeup (20181126095717experimental-0yavdr0~bionic) bionic; urgency=medium
+
+  * port to python3, prepare for systemd 
+
+ -- Alexander Grothe <seahawk1986@gmx.de>  Mon, 26 Nov 2018 10:11:42 +0100
+
 yavdr-hostwakeup (4-0yavdr0~precise) precise; urgency=medium
 
   * new upstream version
