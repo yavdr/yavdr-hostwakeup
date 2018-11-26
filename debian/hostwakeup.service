@@ -1,0 +1,12 @@
+[Unit]
+Description=host wakeup service
+Wants=network-online.target dbus.service avahi-daemon.service
+After=network-online.target dbus.service avahi-daemon.service
+
+[Service]
+Environment=HOSTFILE=/var/cache/hostwakeup/hosts.conf
+EnvironmentFile=-/etc/default/hostwakeup
+ExecStart=/usr/bin/hostwakeup -f "${HOSTFILE}"
+
+[Install]
+WantedBy=multi-user.target
