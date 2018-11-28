@@ -1,3 +1,9 @@
+yavdr-hostwakeup (20181127161318experimental-0yavdr0~bionic) bionic; urgency=medium
+
+  * fix KillSignal for systemd unit
+
+ -- Alexander Grothe <seahawk1986@gmx.de>  Tue, 27 Nov 2018 16:13:12 +0100
+
 yavdr-hostwakeup (20181126095717experimental-0yavdr0~bionic) bionic; urgency=medium
 
   * port to python3, prepare for systemd 
