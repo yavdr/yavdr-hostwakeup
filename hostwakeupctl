@@ -1,4 +1,8 @@
 #!/usr/bin/python3
+"""
+this script allows to access the hostwakeup dbus api from a shell.
+"""
+
 import re
 import sys
 import dbus
@@ -6,14 +10,14 @@ import dbus
 def List():
   bus = dbus.SystemBus()
   Hosts = bus.get_object('de.yavdr.hostwakeup', '/Hosts')
-  hosts = Hosts.List(dbus_interface = 'de.yavdr.hostwakeup')
+  hosts = Hosts.List(dbus_interface='de.yavdr.hostwakeup')
   for host in hosts:
     print(host)
 
 def WakeupHost(hostname):
   bus = dbus.SystemBus()
   Hosts = bus.get_object('de.yavdr.hostwakeup', '/Hosts')
-  return Hosts.Wakeup(hostname, dbus_interface = 'de.yavdr.hostwakeup')
+  return Hosts.Wakeup(hostname, dbus_interface='de.yavdr.hostwakeup')
 
 def AddHost(hostname, mac):
   bus = dbus.SystemBus()
@@ -35,8 +39,8 @@ if __name__ == "__main__":
       WakeupHost(sys.argv[2])
     else:
       sys.exit("wakeup: hostname missing")
-  elif ss.argv[1] == "add":
+  elif sys.argv[1] == "add":
     if len(sys.argv) == 4:
-      AddHost(*sys.argv[2:])
+      AddHost(sys.argv[2], sys.argv[3])
     else:
       sys.exit("add: HOSTNAME MAC-Address")
