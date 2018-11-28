@@ -1,7 +1,7 @@
 #!/usr/bin/python3
-
-import dbus
+import re
 import sys
+import dbus
 
 def List():
   bus = dbus.SystemBus()
@@ -15,14 +15,28 @@ def WakeupHost(hostname):
   Hosts = bus.get_object('de.yavdr.hostwakeup', '/Hosts')
   return Hosts.Wakeup(hostname, dbus_interface = 'de.yavdr.hostwakeup')
 
+def AddHost(hostname, mac):
+  bus = dbus.SystemBus()
+  Hosts = bus.get_object('de.yavdr.hostwakeup', '/Hosts')
+  if re.match("[0-9a-f]{2}([-:]?)[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()):
+    return Hosts.Add(hostname, mac, dbus_interface = 'de.yavdr.hostwakeup')
+  sys.exit("invalid MAC-Address {mac}")
+
 if __name__ == "__main__":
   if len(sys.argv) <= 1:
-     print("usage: hostwakeupctl list")
-     print("       hostwakeupctl wakeup hostname")
+     script_name = sys.argv[0]
+     print(f"usage: {script_name} list",
+           f"       {script_name} wakeup HOSTNAME",
+           f"       {script_name} add HOSTNAME MAC_ADDRESS", sep='\n', file=sys.stderr)
   elif sys.argv[1] == "list":
     List()
   elif sys.argv[1] == "wakeup":
     if len(sys.argv) == 3:
       WakeupHost(sys.argv[2])
     else:
-      print("wakeup: hostname missing")
+      sys.exit("wakeup: hostname missing")
+  elif ss.argv[1] == "add":
+    if len(sys.argv) == 4:
+      AddHost(*sys.argv[2:])
+    else:
+      sys.exit("add: HOSTNAME MAC-Address")
